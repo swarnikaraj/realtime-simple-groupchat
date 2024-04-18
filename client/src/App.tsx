@@ -1,33 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect, useState } from 'react'
+
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [socket, setSocket] = useState<WebSocket |null>(null)
+  const [message, setMessage] = useState<string>('')
+  const [chats,setChats]=useState<string[]>([])
+
+ 
+  useEffect(()=>{
+    const ws = new WebSocket('ws://localhost:5000')
+    ws.onopen=()=>{
+      console.log("connected")
+      ws.send('Hello Server!');
+    }
+    ws.onmessage=(e)=>
+      setChats(ch=>[...ch,e.data])
+   
+      
+    setSocket(ws)
+    return ()=>ws.close()
+  },[])
+
+  if(!socket) return <p>Loading...</p>
+
+  function onSend() {
+    if(socket){
+ socket.send(message)
+      setMessage('')
+    }
+     
+  
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div >
+      <div style={{width:"400px", height:"200px", padding:"2px", margin:"4px", overflowY:"auto"}}>
+        {chats.map((chat,index)=><p key={index}>{chat}</p>)}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <textarea style={{width:"400px", padding:"2px", margin:"4px"}} value={message} onChange={(e)=>setMessage(e.target.value)}/>
+      <button onClick={onSend}>Send Message</button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+       
+      
     </>
   )
 }
