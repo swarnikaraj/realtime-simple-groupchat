@@ -12,7 +12,7 @@ function App() {
     const ws = new WebSocket('ws://localhost:5000')
     ws.onopen=()=>{
       console.log("connected")
-      ws.send('Hello Server!');
+      ws.send('Hello New user Connected');
     }
     ws.onmessage=(e)=>
       setChats(ch=>[...ch,e.data])
